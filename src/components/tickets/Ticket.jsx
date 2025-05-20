@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
-import { getAllEmployees, getEmployeeById } from "../../services/employeeService"
+import { getAllEmployees, getEmployeeByEmployeeId } from "../../services/employeeService"
+import { assignTicket, updateTicket } from "../../services/ticketService" 
 
-export const Ticket = ( {ticket} ) => {
+export const Ticket = ({ ticket, currentUser, getAndSetTickets }) => {
     const [employees, setEmployees] = useState([])
 
     const [assingedEmployee, setAssingedEmployee] = useState("")
@@ -9,7 +10,7 @@ export const Ticket = ( {ticket} ) => {
     // Consolidated function solution
     // useEffect(() => {
     //     if (ticket.employeeTickets.length) {
-    //         getEmployeeById(ticket.employeeTickets[0].employeeId)
+    //        getEmployeeByEmployeeId(ticket.employeeTickets[0].employeeId)
     //         .then((employee) => setAssingedEmployee(employee))
     //     }
     // }, [ticket])
@@ -26,6 +27,33 @@ export const Ticket = ( {ticket} ) => {
         )
         setAssingedEmployee(foundEmployee)
     }, [employees, ticket])
+
+    const handleClaim = () => {
+      const currentEmployee = employees.find((employee) => employee.userId === currentUser.id)
+
+      const newEmployeeTicket = {
+        employeeId: currentEmployee.id,
+        serviceTicketId: ticket.id
+      }
+
+      assignTicket(newEmployeeTicket).then(() => {
+        getAndSetTickets() 
+      })
+    }
+
+    const handleClose = () => {
+      const closedTicket = {
+        id: ticket.id,
+        userId: ticket.userId,
+        description: ticket.description,
+        emergency: ticket.emergency, 
+        dateCompleted: new Date()
+      } 
+
+      updateTicket(closedTicket).then(() => {
+        getAndSetTickets()
+      })
+    }
  
     return <section className="ticket" >  
     <header className="ticket-info">#{Number(ticket.id)}</header>
@@ -38,6 +66,22 @@ export const Ticket = ( {ticket} ) => {
       </div>
       <div className="ticket-info">Emergency</div>
       <div>{ticket.emergency ? "yes" : "no"}</div>
+      <div className="btn-container">
+        {/* If login user is employee and no employee ticket is associated with the service ticket, 
+        then a claim ticket button should display */}
+        {currentUser.isStaff && !assingedEmployee ? (
+          <button className="btn btn-secondary" onClick={handleClaim}>Claim</button>
+        ) : (
+          ""
+        )}
+        {/* If login user is the assinged employee and there is no dateCompleted, 
+        then a close ticket button should display */}
+        {assingedEmployee?.userId === currentUser.id && !ticket.dateCompleted ? (
+          <button className="btn btn-warning" onClick={handleClose}>Close</button>
+        ) : (
+          ""
+        )}
+      </div>
     </footer>
   </section>
 }

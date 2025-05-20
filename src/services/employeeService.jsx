@@ -3,7 +3,24 @@ export const getAllEmployees = () => {
     .then((response) => response.json())
 }
 
-export const getEmployeeById = (employeeId) => {
-    return fetch(`http://localhost:8088/employees/${employeeId}?_expand=user`)
+export const getEmployeeByUserId = (userId) => {
+    return fetch(`http://localhost:8088/employees/?userId=${userId}&_expand=user`)
     .then((response) => response.json())
+}
+
+export const getEmployeeByEmployeeId = (id) => {
+    return fetch(`http://localhost:8088/employees/?id=${id}&_expand=user`)
+    .then((response) => response.json())
+}
+
+export const updateEmployee = (employee) => {
+    return fetch(`http://localhost:8088/employees/${employee.id}`, {
+        method: 'PUT',
+
+        headers: {
+            'Content-Type': 'application/json',
+        },
+
+        body: JSON.stringify(employee)
+    })
 }
